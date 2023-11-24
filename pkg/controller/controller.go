@@ -38,8 +38,10 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/controller-runtime/pkg/cluster"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -131,7 +133,7 @@ func (g *defaultPodGetter) GetPod(ctx context.Context) (*corev1.Pod, error) {
 	if g.pod != nil {
 		return g.pod.DeepCopy(), nil
 	}
-	pod = fakes.Pod(fakes.WithNamespace(util.GetNamespace()),
+	pod = fakes.Pod(fakes.WithNamespace(util.GetPodNamespace()),
 		fakes.WithName(util.GetPodName()))
 	key := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 
@@ -152,12 +154,28 @@ func (g *defaultPodGetter) GetPod(ctx context.Context) (*corev1.Pod, error) {
 	return pod.DeepCopy(), nil
 }
 
+func GetInCluster() (cluster.Cluster, error) {
+	inClusterConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	inCluster, err := cluster.New(inClusterConfig, func(clusterOptions *cluster.Options) {})
+	if err != nil {
+		return nil, err
+	}
+	return inCluster, nil
+}
+
 // AddToManager adds all Controllers to the Manager.
 func AddToManager(m manager.Manager, deps *Dependencies) error {
 	if deps.GetPod == nil {
+		inCluster, err := GetInCluster()
+		if err != nil {
+			return fmt.Errorf("GetInCluster error: %w", err)
+		}
 		podGetter := &defaultPodGetter{
 			scheme: m.GetScheme(),
-			client: m.GetClient(),
+			client: inCluster.GetClient(), //改成获取incluster的client
 		}
 		deps.GetPod = podGetter.GetPod
 	}

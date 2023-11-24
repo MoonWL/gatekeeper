@@ -12,6 +12,7 @@ go.work.sum
 *.dylib
 bin
 _dist
+gatekeeper
 
 # Test binary, build with `go test -c`
 *.test

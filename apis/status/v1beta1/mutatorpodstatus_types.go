@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // MutationsGroup is the API Group for Gatekeeper Mutators.
@@ -98,9 +97,11 @@ func NewMutatorStatusForPod(pod *corev1.Pod, mutatorID mtypes.ID, scheme *runtim
 		PodLabel:         pod.Name,
 	})
 
-	if err := controllerutil.SetOwnerReference(pod, obj, scheme); err != nil {
-		return nil, err
-	}
+	/*
+		if err := controllerutil.SetOwnerReference(pod, obj, scheme); err != nil {
+			return nil, err
+		}
+	*/
 
 	return obj, nil
 }
