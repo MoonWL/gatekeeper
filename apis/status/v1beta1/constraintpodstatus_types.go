@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // ConstraintsGroup is the API Group for Gatekeeper Constraints.
@@ -98,9 +97,11 @@ func NewConstraintStatusForPod(pod *corev1.Pod, constraint *unstructured.Unstruc
 		ConstraintTemplateNameLabel: strings.ToLower(constraint.GetKind()),
 	})
 
-	if err = controllerutil.SetOwnerReference(pod, obj, scheme); err != nil {
-		return nil, err
-	}
+	/*
+		if err = controllerutil.SetOwnerReference(pod, obj, scheme); err != nil {
+			return nil, err
+		}
+	*/
 
 	return obj, nil
 }

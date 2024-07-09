@@ -12,8 +12,16 @@ func GetID() string {
 	return GetPodName()
 }
 
-func GetNamespace() string {
+func GetPodNamespace() string {
 	ns, found := os.LookupEnv("POD_NAMESPACE")
+	if !found {
+		return "gatekeeper-system"
+	}
+	return ns
+}
+
+func GetNamespace() string {
+	ns, found := os.LookupEnv("NAMESPACE")
 	if !found {
 		return "gatekeeper-system"
 	}
